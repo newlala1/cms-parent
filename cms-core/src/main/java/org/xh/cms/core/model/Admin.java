@@ -27,7 +27,7 @@ public class Admin extends BaseModel {
     @Enumerated
     private UserStatus userStatus;
     @JsonIgnore
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
     @JoinTable(
             name="r_admin_role",
             joinColumns = {

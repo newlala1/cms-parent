@@ -24,16 +24,22 @@
     $(function(){
         $("#tree").tree({
             url:loadDataUrl,
-            onClick:function(node){
-                var tabs=$("#tt");
-                var nodeTitle=node.title;
-                if(tabs.tabs("exists",nodeTitle)){
-                    tabs.tabs("selected",nodeTitle);
-                }
-                else{
-                    tab.tabs("add",{
+            onClick:function(node) {
+                if ($("#tree").tree("isLeaf", node.target)) {
 
-                    });
+                    var tabs = $("#tt");
+                    var nodeTitle = node.text;
+                    if (tabs.tabs("exists", nodeTitle)) {
+                        tabs.tabs("select", nodeTitle);
+                    }
+                    else {
+                        tabs.tabs("add", {
+                            id: node.id,
+                            title: node.text,
+                            href: node.url,
+                            closable: true
+                        });
+                    }
                 }
             }
         });

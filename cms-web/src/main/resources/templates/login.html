@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/layout::header(#{APP.NAME})">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="easyui-window" style="width:600px;height:400px" title="登录">
+    <div class="header" style="font-size: 20px;padding:30px">
+        <span th:text="#{APP.NAME}"></span>
+    </div>
+    <div style="padding-top:30px">
+        <form id="form1" th:action="@{/login}" method="post">
+        <table align="center" style="width:350px;height:100%">
+            <tr>
+                <td>账号：</td>
+                <td><input type="text" name="username" class="easyui-validatebox" data-options="required:true" /> </td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password" class="easyui-validatebox" data-options="required:true" /> </td>
+            </tr>
+            <tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <a id="btnLogin" class="easyui-linkbutton" href="#">登录</a>
+                    <a id="btnReset" class="easyui-linkbutton" href="#">重置</a>
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+</div>
+<script>
+    $(function(){
+       $("#btnLogin").click(function() {
+           document.getElementById("form1").submit();
+       }) 
+    });
+</script>
+</body>
+</html>

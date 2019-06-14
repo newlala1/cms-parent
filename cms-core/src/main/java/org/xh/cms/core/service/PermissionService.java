@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.xh.cms.core.dao.PermissionDao;
 import org.xh.cms.core.model.Permission;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**
@@ -16,6 +17,7 @@ import java.util.List;
  * @Version 1.0
  */
 @Service
+@Transactional
 public class PermissionService {
     @Autowired
     private PermissionDao permissionDao;

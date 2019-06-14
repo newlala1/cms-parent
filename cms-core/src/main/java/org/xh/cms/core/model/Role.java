@@ -22,6 +22,8 @@ import java.util.Set;
 public class Role extends BaseModel{
     @Column(length = 100)
     private String roleName;
+    @Column(length=100)
+    private String roleDesc;
     @JsonIgnore
     @ManyToMany(mappedBy = "roleSet")
     private Set<Admin> adminSet;
@@ -51,7 +53,7 @@ public class Role extends BaseModel{
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (getId() != null ? roleName.hashCode() : 0);
+        result = 31 * result + (getId() != null ? getId().hashCode() : 0);
         return result;
     }
 }
