@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/layout::header(#{APP.NAME})">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north', split:true" style="height:120px">
+
+    </div>
+    <div data-options="region:'west',split:true" style="width: 180px;" >
+        <ul class="easyui-tree" id="tree"></ul>
+    </div>
+    <div data-options="region:'center',split:false" style="width:180px">
+        <div id="tt" class="easyui-tabs" style="width:100%;height:100%">
+
+        </div>
+    </div>
+<script language="JavaScript" th:inline="javascript">
+    var loadDataUrl=/*[[@{/permission/list}]]*/;
+    var homeUrl=/*[[@{/welcome}]]*/;
+</script>
+<script language="JavaScript">
+    $(function(){
+        $("#tree").tree({
+            url:loadDataUrl,
+            onClick:function(node){
+                var tabs=$("#tt");
+                var nodeTitle=node.title;
+                if(tabs.tabs("exists",nodeTitle)){
+                    tabs.tabs("selected",nodeTitle);
+                }
+                else{
+                    tab.tabs("add",{
+
+                    });
+                }
+            }
+        });
+        $("#tt").tabs(
+            "add",
+            {
+                title:'首页',
+                href:homeUrl,
+                selected:true
+            }
+        );
+    });
+</script>
+</body>
+</html>
