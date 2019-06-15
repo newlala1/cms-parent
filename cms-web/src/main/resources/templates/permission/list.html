@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"
+xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head th:replace="common/layout::header(#{APP.NAME})">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id="treeList"></div>
+    <script language="JavaScript" th:inline="javascript">
+        var loadDataUrl=/*[[@{/permission/list}]]*/;
+        var homeUrl=/*[[@{/welcome}]]*/;
+    </script>
+    <script>
+        $(function(){
+            $("#treeList").treegrid({
+                url:loadDataUrl,
+                method:'post',
+                idField:'id',
+                treeField:'text',
+                singleSelect:true,
+                frozenColumns:[
+                    [
+                        {
+                            field:'id',
+                            checkbox:true
+                        }
+                    ]
+                ],
+                columns:[
+                    [
+                        {field:'text',title:'资源名称',
+                            editor:{
+                                type:'validatebox',
+                                options:{
+                                    required:true
+                                }
+                            }
+                        },
+                        {field:'url',title:'资源地址',
+                            editor:{
+                                type:'validatebox',
+                                options:{
+                                    required:true
+                                }
+                            }
+                        },
+                        {
+                            field:'action',
+                            title:'Action',
+                            formatter:function(value,row,index){
+
+                                if(row.editing){
+                                    var s="<a href='#' onclick='saverow(this)'>保存</a>&nbsp;";
+                                    var c='<a href="#" onclick="cancelrow(this)">退出</a>';
+                                    return s+c;
+                                }
+                                else{
+                                    var s="<a href='#' onclick='editrow(this)'>编辑</a>&nbsp;";
+                                    var c='<a href="#" onclick="deleterow(this)">删除</a>';
+                                    return s+c;
+                                }
+                            }
+                        }
+                ]
+                ],
+                queryParams:{
+                    loadall:'true'
+                },
+                toolbar:[
+                    {
+                        iconCls:'icon-edit',
+                        handler:function(){
+                            alert(this);
+                        }
+                    },
+                    '-',
+                    {
+                        iconCls:'icon-remove',
+                        handler:function(){
+                            alert("del");
+                        }
+                    }
+                ]
+            });
+        });
+        function getRowIndex(target){
+            var tr = $(target).closest('tr.datagrid-row');
+            var id=tr.attr("id").split("-");
+            return (id[id.length-1]);
+        }
+        function editrow(target){
+            var id=getRowIndex(target);
+            $("#treeList").treegrid("update",{
+                id:id,
+                row:{
+                    editing:true
+                }
+            });
+            $('#treeList').treegrid('beginEdit', id);
+
+        }
+        function deleterow(target){
+            $.messager.confirm('Confirm','Are you sure?',function(r){
+                if (r){
+                    $('#treeList').treegrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function saverow(target){
+            var id=getRowIndex(target);
+            $("#treeList").treegrid("update",{
+                id:id,
+                row:{
+                    editing:false
+                }
+            });
+            $('#treeList').treegrid('endEdit', id);
+        }
+        function cancelrow(target){
+            var id=getRowIndex(target);
+            $("#treeList").treegrid("update",{
+                id:id,
+                row:{
+                    editing:false
+                }
+            });
+            $('#treeList').treegrid('cancelEdit', id);
+        }
+    </script>
+</body>
+</html>

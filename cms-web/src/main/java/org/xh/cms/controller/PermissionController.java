@@ -8,9 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 import org.xh.cms.core.dao.PermissionDao;
 import org.xh.cms.core.model.Admin;
@@ -38,10 +36,15 @@ import static java.util.stream.Collectors.toSet;
 public class PermissionController {
     @Autowired
     private PermissionService permissionService;
+    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    public String listall(){
+        return "permission/list";
+    }
     @ResponseBody
-    @RequestMapping("/list")
-    public List<Permission> list(){
+    @RequestMapping(value = "/list",method = RequestMethod.POST)
+    public List<Permission> list(@RequestParam(name = "loadall",defaultValue = "false",required = false) boolean loadall){
         List<Permission> permissionList=permissionService.findAll();
+
         Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetailService.CustomUserDetails userDetails=(CustomUserDetailService.CustomUserDetails)authentication.getPrincipal();
         Set<Role> roleSet=userDetails.getRoleSet();
@@ -50,7 +53,10 @@ public class PermissionController {
                     return CollectionUtils.containsAny(x.getRolesSet(),roleSet);
                 })
                 .collect(toList());
-        result=combinePermission(result,null);
+        if(loadall==false)
+            result=combinePermission(result,null);
+        else
+            result=combinePermission(permissionList,null);
         return result;
     }
     private List<Permission> combinePermission(List<Permission> permissionList, Permission parentPermission){
