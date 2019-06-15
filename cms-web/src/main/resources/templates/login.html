@@ -37,8 +37,18 @@
 <script>
     $(function(){
        $("#btnLogin").click(function() {
-           document.getElementById("form1").submit();
-       }) 
+           $("#form1").form("submit");
+       });
+       $("#form1").form(
+           {
+                success:function(msg){
+                    var json=$.parseJSON(msg);
+                    if(json.state==0){
+                        location.href="/index";
+                    }
+                }
+           }
+       );
     });
 </script>
 </body>

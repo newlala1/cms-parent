@@ -17,6 +17,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -33,9 +34,9 @@ public class MySecurityFilter  extends FilterSecurityInterceptor{
                 super.doFilter(request, response, chain);
             }
             else{
-                this.getAccessDecisionManager().decide(authentication,null,authentication.getAuthorities().stream().map(x->{
-                    return x.getAuthority();
-                }).map(x->{return new SecurityConfig(x);}).collect(Collectors.toList()));
+                String url=((HttpServletRequest)request).getRequestURI();
+                this.getAccessDecisionManager().decide(authentication,url,
+                        this.getSecurityMetadataSource().getAttributes(url));
                 super.doFilter(request, response, chain);
 
             }

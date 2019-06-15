@@ -3,6 +3,8 @@ package org.xh.cms.core.dao;
 import org.springframework.stereotype.Repository;
 import org.xh.cms.core.model.Permission;
 
+import java.util.List;
+
 /**
  * @ClassName PermissionDao
  * @Description TODO
@@ -13,4 +15,5 @@ import org.xh.cms.core.model.Permission;
  */
 @Repository
 public interface PermissionDao extends BaseDao<Permission,String> {
+    List<Permission> findByPermissionUrl(String permissionUrl);
 }

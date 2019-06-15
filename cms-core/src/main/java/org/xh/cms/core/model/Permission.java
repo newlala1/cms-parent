@@ -28,7 +28,7 @@ public class Permission extends BaseModel{
     @JsonProperty("url")
     private String permissionUrl;
     @JsonIgnore
-    @ManyToMany(mappedBy = "permissionSet")
+    @ManyToMany(mappedBy = "permissionSet",fetch = FetchType.EAGER)
     private Set<Role> rolesSet;
     @JsonManagedReference
     @OneToMany(mappedBy = "parentPermission")

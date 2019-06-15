@@ -15,3 +15,5 @@ spring:
     basename: static/i18n/messages
   thymeleaf:
     cache: false
+  cache:
+    type: simple

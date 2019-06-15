@@ -1,5 +1,6 @@
 package org.xh.cms.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.SecurityMetadataSource;
@@ -12,14 +13,27 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.xh.cms.security.MySecurityFilter;
 import org.xh.cms.security.UrlAccessDecisionManager;
 import org.xh.cms.service.CustomUserDetailService;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.Security;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @ClassName WebSecurityConfiguration
@@ -44,10 +58,14 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
         return new UrlAccessDecisionManager();
     }
     @Bean
+    public ObjectMapper objectMapper(){
+        return new ObjectMapper();
+    }
+    @Bean
     public MySecurityFilter mySecurityFilter(){
         MySecurityFilter f=new MySecurityFilter();
         f.setAccessDecisionManager(accessDecisionManager());
-        f.setSecurityMetadataSource(new CustomUserDetailService());
+        f.setSecurityMetadataSource((FilterInvocationSecurityMetadataSource)userDetailsService());
         return f;
     }
 
@@ -56,7 +74,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
         DaoAuthenticationProvider provider=new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setHideUserNotFoundExceptions(false);
+        provider.setHideUserNotFoundExceptions(true);
 
         auth.authenticationProvider(provider);
         RoleVoter voter;
@@ -73,7 +91,28 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .antMatchers("/js/**","/img/**","/css/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin().loginPage("/login").permitAll()
+                .formLogin().loginPage("/login")
+                .successForwardUrl("/index")
+                .successHandler(new AuthenticationSuccessHandler() {
+                    @Override
+                    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                        Map<String,Object> result=new HashMap<>();
+                        result.put("state","0");
+                        result.put("msg","success");
+                        httpServletResponse.getWriter().write(objectMapper().writeValueAsString(result));
+                    }
+                })
+                .failureForwardUrl("/login?error")
+                .failureHandler(new AuthenticationFailureHandler() {
+                    @Override
+                    public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+                        Map<String,Object> result=new HashMap<>();
+                        result.put("state","-1001");
+                        result.put("msg","Not Login");
+                        httpServletResponse.getWriter().write(objectMapper().writeValueAsString(result));
+                    }
+                })
+                .permitAll()
                 .and()
                 .logout().permitAll()
                 .and()

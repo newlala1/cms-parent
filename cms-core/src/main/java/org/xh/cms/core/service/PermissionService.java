@@ -24,5 +24,8 @@ public class PermissionService {
     public List<Permission> findAll(){
         return permissionDao.findAll();
     }
+    public List<Permission> findByPermissionUrl(String permissionUrl){
+        return permissionDao.findByPermissionUrl(permissionUrl);
+    }
 
 }

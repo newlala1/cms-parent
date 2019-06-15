@@ -1,7 +1,11 @@
 package org.xh.cms.service;
 
+import org.hibernate.annotations.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,14 +14,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.stereotype.Service;
 import org.xh.cms.core.model.Admin;
+import org.xh.cms.core.model.Permission;
 import org.xh.cms.core.model.Role;
 import org.xh.cms.core.service.AdminService;
+import org.xh.cms.core.service.PermissionService;
+
 
 import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -33,6 +41,8 @@ import static java.util.stream.Collectors.toList;
 public class CustomUserDetailService implements UserDetailsService,FilterInvocationSecurityMetadataSource {
     @Autowired
     private AdminService adminService;
+    @Autowired
+    private PermissionService permissionService;
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
@@ -41,14 +51,32 @@ public class CustomUserDetailService implements UserDetailsService,FilterInvocat
         return customUserDetails;
     }
 
+    @Cacheable(key="#o",value="attributesByUrl")
     @Override
     public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
-        return null;
+        List<ConfigAttribute> result=null;
+        if(o instanceof String){
+            result=permissionService.findByPermissionUrl((String)o).stream()
+                    .map(x->{
+                        return x.getPermissionUrl()+":"+x.getRolesSet().stream().map(Role::getRoleName).collect(joining(","));
+                    })
+                    .map(SecurityConfig::new)
+                    .collect(toList());
+        }
+        return result;
     }
 
+    @Cacheable()
     @Override
     public Collection<ConfigAttribute> getAllConfigAttributes() {
-        return null;
+        List<Permission> permissionList=permissionService.findAll();
+        List<ConfigAttribute> configAttributeList=permissionList.stream()
+                .map(x->{
+                    return x.getPermissionUrl()+":"+x.getRolesSet().stream().map(Role::getRoleName).collect(joining(","));
+                })
+                .map(SecurityConfig::new)
+                .collect(toList());
+        return configAttributeList;
     }
 
     @Override
@@ -87,7 +115,7 @@ public class CustomUserDetailService implements UserDetailsService,FilterInvocat
 
         @Override
         public boolean isAccountNonLocked() {
-            return !admin.getUserStatus().equals(UserStatus.LOCKED);
+            return admin==null?false:!admin.getUserStatus().equals(UserStatus.LOCKED);
         }
 
         @Override
