@@ -1,9 +1,13 @@
 package org.xh.cms.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.SecurityMetadataSource;
+import org.springframework.security.access.annotation.Jsr250MethodSecurityMetadataSource;
 import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -11,6 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.xh.cms.security.MySecurityFilter;
+import org.xh.cms.security.UrlAccessDecisionManager;
 import org.xh.cms.service.CustomUserDetailService;
 
 /**
@@ -31,6 +39,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
     public UserDetailsService userDetailsService(){
         return new CustomUserDetailService();
     }
+    @Bean
+    public AccessDecisionManager accessDecisionManager(){
+        return new UrlAccessDecisionManager();
+    }
+    @Bean
+    public MySecurityFilter mySecurityFilter(){
+        MySecurityFilter f=new MySecurityFilter();
+        f.setAccessDecisionManager(accessDecisionManager());
+        f.setSecurityMetadataSource(new CustomUserDetailService());
+        return f;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         DaoAuthenticationProvider provider=new DaoAuthenticationProvider();
@@ -47,7 +67,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
+        http.headers().frameOptions().disable();
+        http.addFilterAfter(mySecurityFilter(), FilterSecurityInterceptor.class)
                 .authorizeRequests()
                 .antMatchers("/js/**","/img/**","/css/**").permitAll()
                 .anyRequest().authenticated()
@@ -56,10 +77,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .and()
                 .logout().permitAll()
                 .and()
+                .cors().disable()
                 .csrf().disable();
     }
-    public static void main(String[] args){
-        BCryptPasswordEncoder e=new BCryptPasswordEncoder();
-        System.out.println(e.encode("123456"));
-    }
+
+
 }

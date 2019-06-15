@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head th:replace="common/layout::header(#{APP.NAME})">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
 欢迎页
+<span sec:authentication="name"></span>
+<div sec:authentication="principal.authorities"></div>
+<p>拥有的角色：
+    <span sec:authorize="hasRole('ROLE_admin')">管理员</span>
+    <span sec:authorize="hasRole('ROLE_user')">用户</span>
+</p>
+
 </body>
 </html>

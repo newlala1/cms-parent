@@ -25,7 +25,7 @@ public class Role extends BaseModel{
     @Column(length=100)
     private String roleDesc;
     @JsonIgnore
-    @ManyToMany(mappedBy = "roleSet")
+    @ManyToMany(mappedBy = "roleSet",fetch = FetchType.EAGER)
     private Set<Admin> adminSet;
     @JsonIgnore
     @ManyToMany(cascade = CascadeType.PERSIST)

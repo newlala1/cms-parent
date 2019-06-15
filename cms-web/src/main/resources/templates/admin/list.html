@@ -5,6 +5,28 @@
     <title>Title</title>
 </head>
 <body>
-LIST
+
+
+<div id="adminList" class="easyui-datagrid"></div>
+<script th:inline="javascript">
+    var loadAdminList=/*[[@{/admin/list}]]*/;
+</script>
+<script>
+    $(function(){
+       $("#adminList").datagrid({
+           columns:[
+               [
+               {field:'userName',title:'账号'},
+               {field:'userStatus',title:'状态'}
+           ]
+           ],
+           url:loadAdminList,
+           method:'post',
+           onLoadSuccess:function(data){
+               alert(JSON.stringify(data));
+           }
+       }) ;
+    });
+</script>
 </body>
 </html>

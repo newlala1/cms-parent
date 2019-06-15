@@ -28,7 +28,7 @@ public class AdminService implements BaseService<Admin,String> {
 
     @Override
     public List<Admin> findAll() {
-        return null;
+        return adminDao.findAll();
     }
 
     public Admin findByUserName(String userName){

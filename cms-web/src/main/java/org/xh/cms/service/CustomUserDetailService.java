@@ -1,11 +1,13 @@
 package org.xh.cms.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.stereotype.Service;
 import org.xh.cms.core.model.Admin;
 import org.xh.cms.core.model.Role;
@@ -28,7 +30,7 @@ import static java.util.stream.Collectors.toList;
  */
 @Service
 @Transactional
-public class CustomUserDetailService implements UserDetailsService {
+public class CustomUserDetailService implements UserDetailsService,FilterInvocationSecurityMetadataSource {
     @Autowired
     private AdminService adminService;
     @Override
@@ -38,6 +40,22 @@ public class CustomUserDetailService implements UserDetailsService {
         CustomUserDetails customUserDetails=new CustomUserDetails(admin);
         return customUserDetails;
     }
+
+    @Override
+    public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
+    public Collection<ConfigAttribute> getAllConfigAttributes() {
+        return null;
+    }
+
+    @Override
+    public boolean supports(Class<?> aClass) {
+        return true;
+    }
+
     public class CustomUserDetails extends Admin implements UserDetails{
         private Admin admin;
         public CustomUserDetails(Admin admin){
