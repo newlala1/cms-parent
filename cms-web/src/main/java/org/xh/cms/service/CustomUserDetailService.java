@@ -1,13 +1,9 @@
 package org.xh.cms.service;
 
-import org.hibernate.annotations.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,15 +14,18 @@ import org.xh.cms.core.model.Permission;
 import org.xh.cms.core.model.Role;
 import org.xh.cms.core.service.AdminService;
 import org.xh.cms.core.service.PermissionService;
-
+import org.xh.cms.core.service.RoleService;
+import org.xh.cms.security.MyConfigAttribute;
+import org.xh.cms.security.MyGrantedAuthority;
 
 import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @ClassName CustomUserDetailService
@@ -43,6 +42,8 @@ public class CustomUserDetailService implements UserDetailsService,FilterInvocat
     private AdminService adminService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private RoleService roleService;
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
@@ -54,29 +55,29 @@ public class CustomUserDetailService implements UserDetailsService,FilterInvocat
     @Cacheable(key="#o",value="attributesByUrl")
     @Override
     public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
-        List<ConfigAttribute> result=null;
-        if(o instanceof String){
-            result=permissionService.findByPermissionUrl((String)o).stream()
-                    .map(x->{
-                        return x.getPermissionUrl()+":"+x.getRolesSet().stream().map(Role::getRoleName).collect(joining(","));
-                    })
-                    .map(SecurityConfig::new)
-                    .collect(toList());
-        }
+
+        List<ConfigAttribute> result=this.getAllConfigAttributes().stream()
+                .filter(x->x.getAttribute().equalsIgnoreCase(o.toString()))
+                .collect(toList());
         return result;
     }
 
     @Cacheable()
     @Override
     public Collection<ConfigAttribute> getAllConfigAttributes() {
+
+        List<ConfigAttribute> result=null;
         List<Permission> permissionList=permissionService.findAll();
-        List<ConfigAttribute> configAttributeList=permissionList.stream()
+        Map<String,List<Role>> r=permissionList.stream()
+                .collect(
+                        toMap(x->{return x.getPermissionUrl();},
+                                y->{return y.getRolesSet().stream().collect(toList());})
+                );
+        result=r.entrySet().stream()
                 .map(x->{
-                    return x.getPermissionUrl()+":"+x.getRolesSet().stream().map(Role::getRoleName).collect(joining(","));
-                })
-                .map(SecurityConfig::new)
-                .collect(toList());
-        return configAttributeList;
+                    return new MyConfigAttribute(x.getKey(),x.getValue());
+                }).collect(toList());
+        return result;
     }
 
     @Override
@@ -92,8 +93,7 @@ public class CustomUserDetailService implements UserDetailsService,FilterInvocat
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             List<GrantedAuthority> authorites=admin.getRoleSet().stream()
-                    .map(Role::getRoleName)
-                    .map(SimpleGrantedAuthority::new)
+                    .map(x->new MyGrantedAuthority(x.getRoleName(),x.getPermissionSet().stream().map(Permission::getPermissionUrl).collect(toList())))
                     .collect(toList());
             return authorites;
         }
