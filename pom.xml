@@ -23,7 +23,7 @@
         <cms.version>1.0-SNAPSHOT</cms.version>
         <lombok.version>1.18.8</lombok.version>
         <flyway.version>3.2</flyway.version>
-        <h2.version>1.4.197</h2.version>
+        <h2.version>2.1.210</h2.version>
     </properties>
     <build>
         <pluginManagement>
