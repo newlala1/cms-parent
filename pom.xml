@@ -19,7 +19,7 @@
         <version>2.1.1.RELEASE</version>
     </parent>
     <properties>
-        <mysql.version>5.1.46</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <cms.version>1.0-SNAPSHOT</cms.version>
         <lombok.version>1.18.8</lombok.version>
         <flyway.version>3.2</flyway.version>
